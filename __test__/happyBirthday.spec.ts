@@ -3,22 +3,19 @@ import * as T  from "../src/types.js";
 
 describe(`isLeapYear`, () => {
     it(`matches leap years`, () => {
-        expect(HB.isLeapYear(2000)).toBe(true);
-        expect(HB.isLeapYear(4)).toBe(true);
-        expect(HB.isLeapYear(400)).toBe(true);
+        [2000, 4, 400]
+            .forEach(year => expect(HB.isLeapYear(year)).toBe(true));
     });
 
     it(`does not match non-leap years`, () => {
-        expect(HB.isLeapYear(1900)).toBe(false);
-        expect(HB.isLeapYear(2100)).toBe(false);
-        expect(HB.isLeapYear(2001)).toBe(false);
-        expect(HB.isLeapYear(100)).toBe(false);
+        [1900, 2100, 2001, 100]
+            .forEach(year => expect(HB.isLeapYear(year)).toBe(false));
     });
 });
 
 describe(`isHappyBirthday`, () => {
     it(`Matches when today is the person birthday`, () => {
-        expect(HB.isHappyBirthday(new Date(2000, 0, 1), `2000/01/01` as T.StringDate)).toBe(true);
+        expect(HB.isHappyBirthday(new Date(2000, 9, 8), `1982/10/08` as T.StringDate)).toBe(true);
     });
 
     it(`Does not match when today is not the person birthday`, () => {
@@ -39,18 +36,17 @@ describe(`happyBirthdayService`, () => {
     it(`returns the mail ready to be sent to the person`, () => {
         const test = `last_name, first_name, date_of_birth, email
 Doe, John, 1982/10/08, john.doe@foobar.com
+Doe, John, I'm a cat, john.doe@foobar.com
 Ann, Mary, 1975/09/11, mary.ann@foobar.com`;
 
-        const mail = HB.happyBirthdayService(new Date(2000, 9, 8), test);
+        const { mails, errors } = HB.happyBirthdayService(new Date(2020, 9, 8), test);
 
-        expect(mail).toStrictEqual([{
-            _tag  : `Right`,
-            right : {
-                from    : `me@happyFace.com`,
-                to      : `john.doe@foobar.com`,
-                subject : `Happy birthday!`,
-                text    : `Happy birthday, dear John!`,
-            },
+        expect(errors).toHaveLength(1);
+        expect(mails).toStrictEqual([{
+            from    : `me@happyFace.com`,
+            to      : `john.doe@foobar.com`,
+            subject : `Happy birthday!`,
+            text    : `Happy birthday, dear John!`,
         }]);
     });
 });

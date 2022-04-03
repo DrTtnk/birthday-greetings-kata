@@ -1,5 +1,5 @@
-import moment  from "moment";
 import * as ts from "io-ts";
+import moment  from "moment";
 
 export type Branded<Brand extends string, Type> = Type & { [k in Brand]: never };
 

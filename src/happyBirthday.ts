@@ -1,19 +1,24 @@
-import * as T    from './types';
-import * as R    from "ramda";
-import * as Papa from "papaparse";
 import {
     either as E,
     function as F,
     array as A,
 } from "fp-ts";
 import { formatValidationErrors } from 'io-ts-reporters';
+import * as Papa                  from "papaparse";
+import * as R                     from "ramda";
 
-export const isLeapYear = (year: number) => year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+import * as T                     from './types';
 
-export const splitDate = (date: T.StringDate) => date.split(`/`).map(Number) as [year: number, month: number, day: number];
+const trace = <T>(x: T) => {
+    console.log(x);
+    return x;
+};
+
+export const isLeapYear = (year: number) =>
+    year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
 
 export const isHappyBirthday = (date: Date, birthDate: T.StringDate) => {
-    const [, month, day]            = splitDate(birthDate);
+    const [, month, day]            = birthDate.split(`/`).map(Number);
     const [todayYear, ...todayDate] = [date.getFullYear(), date.getMonth() + 1, date.getDate()];
 
     return !isLeapYear(todayYear) && R.equals([month, day], [2, 29])
@@ -28,15 +33,26 @@ export const buildEmail = (person: T.Person) => ({
     text    : `Happy birthday, dear ${person.firstName}!`,
 });
 
-export const happyBirthdayService = (today: Date, rawData: string) => F.pipe(
-    Papa.parse<any>(rawData, { header: true, delimiter: `, ` }).data,
-    R.map(raw => T.PersonCodec.decode({
+export const dataLoader = (rawData: string) => Papa
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .parse<any>(rawData, { header: true, delimiter: `, `, skipEmptyLines: true }).data
+    .map(raw => T.PersonCodec.decode({
         lastName    : raw.last_name,
         firstName   : raw.first_name,
         dateOfBirth : raw.date_of_birth,
         email       : raw.email,
-    })),
-    A.filter(E.fold(R.T, p => isHappyBirthday(today, p.dateOfBirth))),
-    A.map(E.map(buildEmail)),
-    A.map(E.mapLeft(formatValidationErrors)),
+    }))
+    .map(E.mapLeft(formatValidationErrors));
+
+export const happyBirthdayService = (today: Date, rawData: string) => F.pipe(
+    dataLoader(rawData),
+    A.separate,
+    trace,
+    ({ left: errors, right: people }) => ({
+        errors,
+        mails: people
+            .filter(p => isHappyBirthday(today, p.dateOfBirth))
+            .map(buildEmail),
+    }),
 );
+

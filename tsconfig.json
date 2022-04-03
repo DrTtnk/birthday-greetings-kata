@@ -17,5 +17,6 @@
     "esModuleInterop": true,
   },
   "exclude": ["build", "__test__/**", "**/node_modules", "**/.*/"],
+  "include": ["src/**/*"],
   "compileOnSave": true
 }

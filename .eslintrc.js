@@ -1,5 +1,4 @@
 const E = `error`;
-const W = `warning`;
 const O = `off`;
 
 // eslint-disable-next-line no-undef
@@ -9,9 +8,10 @@ module.exports = {
         `plugin:@typescript-eslint/recommended`,
         `plugin:@typescript-eslint/eslint-recommended`,
     ],
-    parser  : `@typescript-eslint/parser`,
-    plugins : [`@typescript-eslint`, `arca`, `align-assignments`],
-    rules   : {
+    parser         : `@typescript-eslint/parser`,
+    plugins        : [`@typescript-eslint`, `arca`, `align-assignments`],
+    ignorePatterns : [`build`, `dist`, `node_modules`],
+    rules          : {
         "key-spacing": [E, {
             "mode"  : `strict`,
             "align" : {
@@ -45,9 +45,12 @@ module.exports = {
         "@typescript-eslint/no-inferrable-types"  : E,
         "@typescript-eslint/no-extra-parens"      : [E, `all`],
         "@typescript-eslint/object-curly-spacing" : [E, `always`],
-        "@typescript-eslint/no-unused-vars"       : [E, { "argsIgnorePattern": `_+.*` }],
+        "@typescript-eslint/no-unused-vars"       : [E, { "argsIgnorePattern": `_+`, "varsIgnorePattern": `_+` }],
+        "@typescript-eslint/no-explicit-any"      : E,
 
-        "arca/import-align": [E, { collapseExtraSpaces: true }],
+        "arca/import-align"                 : [E, { collapseExtraSpaces: true }],
+        "arca/newline-after-import-section" : E,
+        "arca/import-ordering"              : E,
 
         "space-in-parens" : [E, `never`],
         "indent"          : [E, 4, {
